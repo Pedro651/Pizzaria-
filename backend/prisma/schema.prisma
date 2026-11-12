@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id String @id @default(uuid())
+  name String 
+  email String @unique
+  password String
+  //Tipa ele como Role e que ele ja seja STAFF
+  role Role @default(STAFF)
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+   //Nome da tabela
+    @@map("users")
+}
+
+enum Role{
+  STAFF
+  ADMIN
+}
+
+model Category{
+  id String @id @default(uuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
+  product Product[]
+
+  //Nome da tabela
+  @@map("caregories")
+}
+
+model Product{
+   id String @id @default(uuid())
+   name String
+   price Int 
+   description String
+   banner String
+   //Começa como false
+   disable Boolean @default(false)
+
+   category_id String
+   category Category @relation(fields:[category_id], references:[id], onDelete:Cascade)
+
+   item Item[]
+   createdAt DateTime @default(now())
+   updatedAt  DateTime @updatedAt
+
+   @@map("products")
+
+}
+
+model Order {
+  id     String  @id @default(uuid())
+  table  Int
+  status Boolean @default(false)//false = Pendente True = Pronto
+  draft  Boolean @default(true)//Quando cria uma order é false, quando foi enviado pra cozinha é true
+  name   String?
+
+  items Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model Item {
+  id        String   @id @default(uuid())
+  amount    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order_id String
+  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  product_id String
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("items")
+}
